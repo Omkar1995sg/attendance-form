@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Attendance with Address</title>
+  <script>
+    // ✅ Your Google Form prefilled base URL without any parameters
+    const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLSeGF_imyOBuVkD8hFOefWB2wNmSnSKKjbANB76pxMafSz8ljg/viewform?usp=pp_url";
+
+    // ✅ Replace with your actual field IDs from the pre-filled form
+    const rollKey = "entry.846968130";      // Roll No key
+    const locationKey = "entry.718692023";  // Address/Location key
+
+    function openFormWithLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+
+          // 🌐 Reverse geocoding API
+          const geoUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+
+          try {
+            const response = await fetch(geoUrl);
+            const data = await response.json();
+            const address = data.display_name;
+
+            // ✅ Construct URL with only the location filled in
+            const url = formBaseURL +
+              `&${rollKey}=` +      // Roll No left blank for user input
+              `&${locationKey}=` + encodeURIComponent(address);
+
+            // 🌐 Redirect to Google Form with address auto-filled
+            window.location.href = url;
+
+          } catch (err) {
+            alert("Failed to fetch address from GPS. Please check internet.");
+          }
+
+        }, () => {
+          alert("Location access denied. Please enable it and reload.");
+        });
+      } else {
+        alert("Your browser doesn't support location.");
+      }
+    }
+
+    window.onload = openFormWithLocation;
+  </script>
+</head>
+<body>
+  <h2>Loading Attendance Form...</h2>
+  <p>Please allow location access to continue.</p>
+</body>
+</html>
